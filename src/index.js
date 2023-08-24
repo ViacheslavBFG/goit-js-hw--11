@@ -7,27 +7,16 @@ import { per_page } from './queries.js';
 import { totalHits } from './queries.js';
 
 /*
-│ =========================
-│           Refs
-│ =========================
-*/
 
-const refs = {
-  form: document.querySelector('.search-form'),
-  gallery: document.querySelector('.gallery'),
-  observerTarget: document.querySelector('.js-observer'),
-};
-const { form, gallery, observerTarget } = refs;
-let maxPage = 1;
-let query = '';
-let currentPage = 1;
+          Refs
 
-const lightbox = new SimpleLightbox('.gallery a');
+
+
 
 /*
-│ =========================
-│           Event
-│ =========================
+
+          Event
+
 */
 
 form.addEventListener('submit', onFormSubmit);
@@ -64,9 +53,9 @@ async function onFormSubmit(event) {
 }
 
 /*
-│ =========================
-│        observer
-│ =========================
+
+      observer
+ 
 */
 function callback(entries, observer) {
   entries.forEach(async entry => {
@@ -110,9 +99,8 @@ const observer = new IntersectionObserver(callback);
 observer.observe(observerTarget);
 
 /*
-│ =========================
-│       Cards markup
-│ =========================
+      Cards markup
+
 */
 function createCardsMarkup(arr) {
   // console.log(arr);
