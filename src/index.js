@@ -27,7 +27,7 @@ async function onFormSubmit(event) {
   gallery.innerHTML = '';
   query = form.elements.searchQuery.value;
   if (!query) {
-    Notiflix.Notify.failure('Please, enter keywords!');
+    Notiflix.Notify.failure('Please, enter anywords!');
     return;
   }
   try {
@@ -40,7 +40,7 @@ async function onFormSubmit(event) {
     if (!data.length) {
       form.reset();
       throw new Error(
-        'Sorry, there are no images matching your search query. Please try again.'
+        'Sorry, Dude we cant find. Please try again.'
       );
     }
 
@@ -71,7 +71,7 @@ function callback(entries, observer) {
         const data = await searchImages(query);
         if (!data.length) {
           throw new Error(
-            'Sorry, there are no images matching your search query. Please try again.'
+            'Sorry, Dude we cant find. Please try again. Please try again.'
           );
         }
 
@@ -89,7 +89,7 @@ function callback(entries, observer) {
         currentPage += 1;
       } catch (error) {
         Notiflix.Notify.failure(
-          `Sorry, there are no images matching your search query. Please try again.`
+          `Sorry, Dude we cant find. Please try again. Please try again.`
         );
       }
     }
