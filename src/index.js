@@ -1,150 +1,68 @@
-import axios from 'axios';
+import Notiflix from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import { searchImages } from './queries.js';
-import Notiflix from 'notiflix';
-import { per_page } from './queries.js';
-import { totalHits } from './queries.js';
+import { fetchImages } from './gallery';
 
-/*
+const form = document.getElementById('search-form');
+const loadMoreBtn = document.querySelector('.load-more');
+const gallery = document.querySelector('.gallery');
 
-          Refs
+let currentPage = 1;
+let currentQuery = '';
 
+const lightbox = new SimpleLightbox('.gallery a', {});
+// lightbox.refresh();
 
-
-
-/*
-
-          Event
-
-*/
-
-form.addEventListener('submit', onFormSubmit);
-
-async function onFormSubmit(event) {
+// Форма пошуку
+form.addEventListener('submit', async (event) => {
   event.preventDefault();
   currentPage = 1;
-  gallery.innerHTML = '';
-  query = form.elements.searchQuery.value;
-  if (!query) {
-    Notiflix.Notify.failure('Please, enter anywords!');
-    return;
-  }
-  try {
-    const data = await searchImages(query);
-    // console.log(totalHits);
-    // console.log(data);
-    maxPage = Math.ceil(totalHits / per_page);
-    // console.log(data);
+  currentQuery = event.target.searchQuery.value.trim();
 
-    if (!data.length) {
-      form.reset();
-      throw new Error(
-        'Sorry, Dude we cant find. Please try again.'
-      );
-    }
-
-    createCardsMarkup(data);
-    // currentPage += 1;
-    form.reset();
-  } catch (err) {
-    Notiflix.Notify.failure(`${err.message}`);
-  }
-}
-
-/*
-
-      observer
- 
-*/
-function callback(entries, observer) {
-  entries.forEach(async entry => {
-    if (entry.isIntersecting && gallery.innerHTML !== '') {
-      if (currentPage === maxPage) {
-        observer.unobserve(observerTarget);
-        Notiflix.Notify.failure(
-          "We're sorry, but you've reached the end of search results."
-        );
+    // перевірка на пробіли в пошуку
+    if (currentQuery.length === 0) {
+        Notiflix.Notify.failure('Please enter a valid search term.');
         return;
-      }
-      try {
-        const data = await searchImages(query);
-        if (!data.length) {
-          throw new Error(
-            'Sorry, Dude we cant find. Please try again. Please try again.'
-          );
-        }
-
-        createCardsMarkup(data);
-        // if (gallery.innerHTML !== '') {
-        const { height: cardHeight } = document
-          .querySelector('.gallery')
-          .firstElementChild.getBoundingClientRect();
-
-        window.scrollBy({
-          top: cardHeight * 1.5,
-          behavior: 'smooth',
-        });
-        // }
-        currentPage += 1;
-      } catch (error) {
-        Notiflix.Notify.failure(
-          `Sorry, Dude we cant find. Please try again. Please try again.`
-        );
-      }
     }
-  });
-}
-const observer = new IntersectionObserver(callback);
-observer.observe(observerTarget);
+  
+  gallery.innerHTML = ''; 
 
-/*
-      Cards markup
-
-*/
-function createCardsMarkup(arr) {
-  // console.log(arr);
-  const galleryImages = arr
-    .map(
-      ({
-        likes,
-        views,
-        comments,
-        downloads,
-        webformatURL,
-        largeImageURL,
-        tags,
-      }) => {
-        return `
-      <div class="photo-card">
-        <a class="gallery__link" href="${largeImageURL}" width=300 height=200
-        style="background-image: url('${webformatURL}')">
-        </a>
-        <div class="info">
-          <p class="info-item">
-            <b>Likes</b>
-            <span class="quant">${likes}</span>
-          </p>
-          <p class="info-item">
-            <b>Views</b>
-            <span class="quant">${views}</span>
-          </p>
-          <p class="info-item">
-            <b>Comments</b>
-            <span class="quant">${comments}</span>
-          </p>
-          <p class="info-item">
-            <b>Downloads</b>
-            <span class="quant">${downloads}</span>
-          </p>
-        </div>
-      </div>
-    `;
-      }
-    )
-    .join('');
-
-  gallery.insertAdjacentHTML('beforeend', galleryImages);
-
+  await fetchImages(currentQuery, 1);
   lightbox.refresh();
+});
+
+// "load more" button 
+// async function fetchMoreImages() {
+//     await fetchImages();
+//     window.scrollTo({
+//         top: document.body.scrollHeight,
+//         behavior: 'smooth'
+//     });
+// }
+
+
+
+loadMoreBtn.addEventListener('click', fetchImages);
+
+const observerOptions = {
+    // root: null, // Область, яка використовується для відслідковування, за замовчуванням вся сторінка
+    rootMargin: '0px',
+    threshold: 0.5 // Порогове значення від 0 до 1
+};
+
+const observer = new IntersectionObserver(handleIntersect, observerOptions);
+
+function handleIntersect(entries, observer) {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+          currentPage +=1
+        fetchImages(currentQuery, currentPage);
+        lightbox.refresh();
+        }
+    });
 }
+
+observer.observe(loadMoreBtn);
+
+// const lightbox = new SimpleLightbox('.gallery a', {});
+// lightbox.refresh();
